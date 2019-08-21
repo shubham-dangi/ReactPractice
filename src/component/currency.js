@@ -5,6 +5,8 @@ import TextField from '@material-ui/core/TextField';
 
 let dx;
 
+let rate1,rate2;
+
 var crossMatrix = [["1:1","USD","USD","USD","USD","USD","USD","USD","USD","USD","D"],
 ["USD","1:1","USD","USD","USD","USD","USD","USD","USD","USD","D"],
 ["USD","USD","1:1","USD","USD","USD","USD","USD","USD","USD","D"],
@@ -28,8 +30,9 @@ class Currency extends React.Component {
       amount: 1,
       mIndex: "0",
       nIndex: "10",
-      indexValue: "0",
+      vIndex: "0",
       rateString: "AUDUSD",
+      matrixValue: "D",
       currencies: []
     };
   }
@@ -59,6 +62,7 @@ class Currency extends React.Component {
       this.setState({ rateString: str });
       
         var matrixValue = crossMatrix[m][n];
+        this.setState({matrixValue: matrixValue});
         axios
           .get('rate.json').then(response => {
         if(matrixValue === "1:1"){
@@ -115,72 +119,95 @@ class Currency extends React.Component {
   }
 
   ccyHandler = () => {
+    
+    var r1,r2,r3,r4;
 
-    var i = this.state.mIndex;
-    var j = this.state.nIndex;
-
-    var matrixValue = crossMatrix[i][j];
     axios
       .get('currency.json').then(response => {
         for (const key in response.data.rates) {
-          this.setState({vIndex: response.data.rates[matrixValue]})
+          if(this.state.matrixValue === key)
+          this.setState({vIndex: response.data.rates[this.state.matrixValue]})
         }
-      })
-      
+      })      
       .catch(err => {
         console.log("oppps", err);
-      });      
-    axios
-      .get('rate.json').then(response => {
-    var ccyString1 = this.state.fromCurrency.concat(matrixValue);
-    var ccyString2 = matrixValue.concat(this.state.toCurrency);
-    for (const key in response.data.rates) {
-      if(ccyString1 === key && ccyString2 === key ){
-      this.dx = (this.state.amount) * (response.data.rates[ccyString1]) * (response.data.rates[ccyString2]) ;
-      this.setState({ result: this.dx});
-      // break;
-      }
-      else if(ccyString1 !== key || ccyString2 !== key ){
-        if( ccyString1 !== key && ccyString2 === key){
-          var ccyString11 = matrixValue.concat(this.state.fromCurrency);
-          var ccyResult = this.state.amount * response.data.rates[ccyString11] * response.data.rates[ccyString2] ;
-          this.setState({ result: ccyResult});
-          break;
-        }
+      });
 
-        if(ccyString1 === key && ccyString2 !== key){
-          var ccyString11 = this.state.fromCurrency.concat(matrixValue);
-          var ccyString12 = this.state.toCurrency.concat(matrixValue);
-          var ccyResult = this.state.amount * response.data.rates[ccyString11] * response.data.rates[ccyString12] ;
-          this.setState({ result: ccyResult});
-          // break;
-          
-        }
-        if(ccyString12 !== key  ){
-          var v = this.state.vIndex;
-          console.log("skdjsjdkasdjsadas: ", v);
-          var matrixValue1 = crossMatrix[v][j];
-          var ccyStringa = matrixValue.concat(matrixValue1);
-          var ccyStringb = matrixValue1.concat(this.state.toCurrency);
-          if(ccyStringa !== key || ccyStringb === key){
-            var ccyStringaa = matrixValue1.concat(matrixValue);
-            var ccyResulta = this.state.amount * response.data.rates[ccyStringaa] * response.data.rates[ccyStringb] ;
-            this.setState({ result: ccyResulta});
+      var ccyString1 = this.state.fromCurrency.concat(this.state.matrixValue);
+      var inverseString1 = this.state.matrixValue.concat(this.state.fromCurrency);
+      var ccyString2 = this.state.matrixValue.concat(this.state.toCurrency);
+      var inversString2 = this.state.toCurrency.concat(this.state.matrixValue);
+      var matrixValue1 = crossMatrix[this.state.mIndex][this.state.vIndex];
+              var matrixValue2 = crossMatrix[this.state.vIndex][this.state.nIndex];
+              var ccyStringm1 = this.state.fromCurrency.concat(matrixValue1);
+              var inverseCcyStringm1 = matrixValue1.concat(this.state.fromCurrency);
+              var ccyStringmm1 = matrixValue1.concat(this.state.matrixValue);
+              var inverseCcyStringmm1 = this.state.matrixValue.concat(matrixValue1);
+              var ccyStringm2 = this.state.matrixValue.concat(matrixValue2);
+              var inverseCcyStringm2 = matrixValue2.concat(this.state.matrixValue);
+              var ccyStringmm2 = matrixValue2.concat(this.state.toCurrency);
+              var inverseCcyStringmm2 = this.state.toCurrency.concat(matrixValue2);
+
+      axios.
+        get('rate.json').then(response => {
+          for(const key in response.data.rates){
+            if(ccyString1 === key){
+              rate1 = response.data.rates[ccyString1];
+              // break;
+            }
+            else if(inverseString1 === key){
+              rate1 = 1/response.data.rates[inverseString1];
+              // break;
+            }
+            else if(ccyString2 === key){
+              rate2 = response.data.rates[ccyString2];
+              // break;
+            }
+            else if(inversString2 === key){
+              rate2 = 1/response.data.rates[inversString2];
+              // break;
+            }
+            // if(ccyString1!== key){
+              // else if(ccyStringm1 === key){
+              //   r1 = response.data.rates[ccyStringm1];
+              // }
+              // else if(inverseCcyStringm1 === key){
+              //   r1 = 1/ response.data.rates[inverseCcyStringm1];
+              // }
+              // else if(ccyStringmm1 === key){
+              //   r2 = response.data.rates[ccyStringmm1];
+              // }
+              // else if(inverseCcyStringmm1 === key){
+              //   r2 = 1 / response.data.rates[inverseCcyStringmm1];
+              // }
+              // else if(ccyStringm2 === key){
+              //   r3 = response.data.rates[ccyStringm2];
+              // }
+              // else if(inverseCcyStringm2 === key){
+              //   r3 = 1 / response.data.rates[inverseCcyStringm2];
+              // }
+              // else if(ccyStringmm2 === key){
+              //   r4 = response.data.rates[ccyStringmm2];
+              // }
+              // else if(inverseCcyStringmm2 === key){
+              //   r4 = 1 / response.data.rates[inverseCcyStringmm2];
+              // }
+
+            // }
           }
-          // break;
-        }
-        if(ccyString1 !== key && ccyString2 === key){
-          var ccyString21 = matrixValue.concat(this.state.fromCurrency);
-          var ccyString22 = matrixValue.concat(this.state.toCurrency);
-          var ccyResult1 = this.state.amount * response.data.rates[ccyString21] * response.data.rates[ccyString22] ;
-          this.setState({ result: ccyResult1});
-        }
-      }
-    }
-  })
-  .catch(err => {
-    console.log("oppps", err);
+
+          // rate1 = r1 * r2;
+          // rate2 = r3 * r4;
+          
+          var sd = this.state.amount * rate1 * rate2;
+          console.log("ccyString rate: ", sd);
+          this.setState({result : sd});
+
+        })
+        .catch(err => {
+        console.log("oppps", err);
   });
+
   }
 
   // resultHandler = (resultant) =>{
